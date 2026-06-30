@@ -154,6 +154,15 @@ MODEL_OPTIONS: ProviderModeOptions = {
     "minimax": _MINIMAX_MODELS,
     "minimax-cn": _MINIMAX_MODELS,
     # OpenRouter: fetched dynamically. Azure: any deployed model name.
+    # OpenCode Go: model IDs come from the user's OpenCode /models list.
+    "opencode": {
+        "quick": [
+            ("Custom model ID", "custom"),
+        ],
+        "deep": [
+            ("Custom model ID", "custom"),
+        ],
+    },
     # Ollama display labels intentionally omit a "local" marker — the
     # endpoint is now configurable via OLLAMA_BASE_URL, so the same labels
     # apply whether the user runs ollama-serve on localhost or against a

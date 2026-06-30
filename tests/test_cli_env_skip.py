@@ -18,6 +18,7 @@ class TestProviderDefaultUrl(unittest.TestCase):
         from cli.utils import provider_default_url
         self.assertEqual(provider_default_url("openai"), "https://api.openai.com/v1")
         self.assertEqual(provider_default_url("DeepSeek"), "https://api.deepseek.com")
+        self.assertEqual(provider_default_url("opencode"), "https://opencode.ai/zen/go/v1")
         self.assertIsNone(provider_default_url("google"))  # uses SDK default
 
     def test_unknown_provider_returns_none(self):
@@ -36,7 +37,7 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
         import cli.main as m
 
         env = {
-            "TRADINGAGENTS_LLM_PROVIDER": "openai",
+            "TRADINGAGENTS_LLM_PROVIDER": "opencode",
             "TRADINGAGENTS_DEEP_THINK_LLM": "kimi-k2.5",
             "TRADINGAGENTS_QUICK_THINK_LLM": "deepseek-v4-pro",
             "TRADINGAGENTS_LLM_BACKEND_URL": "https://opencode.ai/zen/go/v1",
@@ -44,7 +45,7 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
         }
         fake_cfg = dict(m.DEFAULT_CONFIG)
         fake_cfg.update({
-            "llm_provider": "openai",
+            "llm_provider": "opencode",
             "backend_url": "https://opencode.ai/zen/go/v1",
             "quick_think_llm": "deepseek-v4-pro",
             "deep_think_llm": "kimi-k2.5",
@@ -75,7 +76,7 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
         ensure_key.assert_called_once()
 
         # The env values flow into the returned selections.
-        self.assertEqual(sel["llm_provider"], "openai")
+        self.assertEqual(sel["llm_provider"], "opencode")
         self.assertEqual(sel["backend_url"], "https://opencode.ai/zen/go/v1")
         self.assertEqual(sel["shallow_thinker"], "deepseek-v4-pro")
         self.assertEqual(sel["deep_thinker"], "kimi-k2.5")

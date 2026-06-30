@@ -17,6 +17,7 @@ from tradingagents.llm_clients.openai_client import (
 def test_registry_membership():
     assert is_openai_compatible("openai")
     assert is_openai_compatible("openai_compatible")  # the generic endpoint
+    assert is_openai_compatible("opencode")
     # native (different API) clients are intentionally NOT in the registry
     assert not is_openai_compatible("anthropic")
     assert not is_openai_compatible("google")
@@ -39,6 +40,7 @@ def test_registry_membership():
     ("kimi", "https://api.moonshot.ai/v1", NormalizedChatOpenAI, False),
     ("groq", "https://api.groq.com/openai/v1", NormalizedChatOpenAI, False),
     ("nvidia", "https://integrate.api.nvidia.com/v1", NormalizedChatOpenAI, False),
+    ("opencode", "https://opencode.ai/zen/go/v1", NormalizedChatOpenAI, False),
     ("ollama", "http://localhost:11434/v1", NormalizedChatOpenAI, False),
 ])
 def test_registry_spec(provider, base_url, chat_class, responses):
