@@ -151,6 +151,7 @@ export ZHIPU_CN_API_KEY=...        # GLM via BigModel (China, open.bigmodel.cn)
 export MINIMAX_API_KEY=...         # MiniMax — Global (api.minimax.io)
 export MINIMAX_CN_API_KEY=...      # MiniMax — China (api.minimaxi.com)
 export OPENROUTER_API_KEY=...      # OpenRouter
+export OPENCODE_API_KEY=...        # OpenCode Go
 export ALPHA_VANTAGE_API_KEY=...   # Alpha Vantage
 ```
 
@@ -161,6 +162,8 @@ For AWS Bedrock, install the extra with `pip install ".[bedrock]"`, set `llm_pro
 For local models, configure Ollama with `llm_provider: "ollama"`. The default endpoint is `http://localhost:11434/v1`; set `OLLAMA_BASE_URL` to point at a remote `ollama-serve`. Pull models with `ollama pull <name>`, and pick "Custom model ID" in the CLI for any model not listed by default.
 
 For any other OpenAI-compatible server (vLLM, LM Studio, llama.cpp, or a custom relay), use `llm_provider: "openai_compatible"` and set the endpoint via `backend_url` (or `TRADINGAGENTS_LLM_BACKEND_URL`), e.g. `http://localhost:8000/v1` for vLLM or `http://localhost:1234/v1` for LM Studio. The model is whatever your server serves. No key is needed for local servers; set `OPENAI_COMPATIBLE_API_KEY` when the endpoint requires one.
+
+For OpenCode Go, configure `llm_provider: "opencode"`. The default endpoint is `https://opencode.ai/zen/go/v1`; set `TRADINGAGENTS_LLM_BACKEND_URL` only if you need to route through a proxy or a different OpenCode-compatible endpoint. Pick "Custom model ID" in the CLI and enter the exact model ID shown by OpenCode `/models`.
 
 Alternatively, copy `.env.example` to `.env` and fill in your keys:
 ```bash
@@ -204,7 +207,7 @@ An interface will appear showing results as they load, letting you track the age
 
 ### Implementation Details
 
-We built TradingAgents with LangGraph to ensure flexibility and modularity. The framework supports multiple LLM providers: OpenAI, Google, Anthropic, xAI, DeepSeek, Qwen (Alibaba DashScope, international and China endpoints), GLM (Zhipu), MiniMax (global + China), OpenRouter, Ollama for local models, and Azure OpenAI for enterprise.
+We built TradingAgents with LangGraph to ensure flexibility and modularity. The framework supports multiple LLM providers: OpenAI, Google, Anthropic, xAI, DeepSeek, Qwen (Alibaba DashScope, international and China endpoints), GLM (Zhipu), MiniMax (global + China), OpenRouter, OpenCode Go, Mistral, Kimi, Groq, NVIDIA NIM, Ollama for local models, generic OpenAI-compatible endpoints, Azure OpenAI, and Bedrock.
 
 ### Python Usage
 
@@ -228,7 +231,7 @@ from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
 config = DEFAULT_CONFIG.copy()
-config["llm_provider"] = "openai"        # e.g. openai, google, anthropic, deepseek, groq, ollama; openai_compatible covers any OpenAI-compatible endpoint (vLLM, LM Studio, llama.cpp, ...)
+config["llm_provider"] = "openai"        # e.g. openai, google, anthropic, xai, deepseek, openrouter, opencode, groq, kimi, mistral, nvidia, ollama; openai_compatible covers any custom OpenAI-compatible endpoint
 config["deep_think_llm"] = "gpt-5.5"     # Model for complex reasoning
 config["quick_think_llm"] = "gpt-5.4-mini" # Model for quick tasks
 config["max_debate_rounds"] = 2
@@ -239,6 +242,15 @@ print(decision)
 ```
 
 See `tradingagents/default_config.py` for all configuration options.
+
+OpenCode Go can be configured without prompts:
+```bash
+export OPENCODE_API_KEY=...
+export TRADINGAGENTS_LLM_PROVIDER=opencode
+export TRADINGAGENTS_DEEP_THINK_LLM=kimi-k2.5
+export TRADINGAGENTS_QUICK_THINK_LLM=deepseek-v4-pro
+tradingagents
+```
 
 ## Persistence and Recovery
 

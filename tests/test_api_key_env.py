@@ -22,7 +22,7 @@ def test_every_select_llm_provider_choice_has_an_entry():
         "qwen", "qwen-cn",
         "glm", "glm-cn",
         "minimax", "minimax-cn",
-        "openrouter", "azure", "ollama",
+        "openrouter", "opencode", "azure", "ollama",
     }
     assert expected.issubset(PROVIDER_API_KEY_ENV.keys())
 
@@ -43,6 +43,7 @@ def test_every_select_llm_provider_choice_has_an_entry():
         ("minimax",    "MINIMAX_API_KEY"),
         ("minimax-cn", "MINIMAX_CN_API_KEY"),
         ("openrouter", "OPENROUTER_API_KEY"),
+        ("opencode",   "OPENCODE_API_KEY"),
     ],
 )
 def test_known_providers_resolve(provider, env_var):
@@ -146,3 +147,16 @@ def test_ensure_api_key_updates_existing_env_file(monkeypatch, tmp_path, cli_uti
     assert "OPENAI_API_KEY" in content and "sk-existing" in content
     assert "OTHER=value" in content
     assert "OPENROUTER_API_KEY" in content and "sk-openrouter-new" in content
+
+
+def test_ensure_api_key_supports_opencode(monkeypatch, tmp_path, cli_utils):
+    monkeypatch.delenv("OPENCODE_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    fake_prompt = type("P", (), {"ask": staticmethod(lambda: "sk-opencode-test")})()
+    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt):
+        result = cli_utils.ensure_api_key("opencode")
+
+    assert result == "sk-opencode-test"
+    assert os.environ["OPENCODE_API_KEY"] == "sk-opencode-test"
+    assert "OPENCODE_API_KEY" in (tmp_path / ".env").read_text()
