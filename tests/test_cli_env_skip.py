@@ -145,5 +145,14 @@ class TestReasoningEffortSkippedFromEnv(unittest.TestCase):
         self.assertEqual(sel["openai_reasoning_effort"], "high")
 
 
+@pytest.mark.unit
+class TestDefaultReportPath(unittest.TestCase):
+    def test_default_report_path_uses_date_then_ticker(self):
+        from cli.main import default_report_path
+
+        path = default_report_path("/tmp/tradingagents-reports", "2026-05-29", "aapl")
+        self.assertEqual(str(path), "/tmp/tradingagents-reports/2026-05-29_AAPL")
+
+
 if __name__ == "__main__":
     unittest.main()

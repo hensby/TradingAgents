@@ -747,6 +747,17 @@ def get_analysis_date():
             )
 
 
+def default_report_path(report_dir: str | Path, analysis_date: str, ticker: str) -> Path:
+    """Build the default save directory for a report.
+
+    The default name is date + stock code so saved reports are easy to sort
+    and identify without relying on a wall-clock timestamp.
+    """
+    safe_ticker = ticker.strip().upper()
+    safe_date = analysis_date.strip()
+    return Path(report_dir) / f"{safe_date}_{safe_ticker}"
+
+
 def save_report_to_disk(final_state, ticker: str, save_path: Path):
     """Save the complete analysis report to disk (shared CLI/API writer)."""
     return write_report_tree(final_state, ticker, save_path)
@@ -1247,8 +1258,11 @@ def run_analysis(checkpoint: bool | None = None):
     # Prompt to save report
     save_choice = typer.prompt("Save report?", default="Y").strip().upper()
     if save_choice in ("Y", "YES", ""):
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        default_path = Path.cwd() / "reports" / f"{selections['ticker']}_{timestamp}"
+        default_path = default_report_path(
+            config["report_dir"],
+            selections["analysis_date"],
+            selections["ticker"],
+        )
         save_path_str = typer.prompt(
             "Save path (press Enter for default)",
             default=str(default_path)
