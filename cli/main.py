@@ -48,7 +48,7 @@ from tradingagents.graph.analyst_execution import (
     sync_analyst_tracker_from_chunk,
 )
 from tradingagents.graph.trading_graph import TradingAgentsGraph
-from tradingagents.reporting import write_report_tree
+from tradingagents.reporting import default_report_path, write_report_tree
 
 console = Console()
 
@@ -1247,8 +1247,11 @@ def run_analysis(checkpoint: bool | None = None):
     # Prompt to save report
     save_choice = typer.prompt("Save report?", default="Y").strip().upper()
     if save_choice in ("Y", "YES", ""):
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        default_path = Path.cwd() / "reports" / f"{selections['ticker']}_{timestamp}"
+        default_path = default_report_path(
+            config["report_dir"],
+            selections["analysis_date"],
+            selections["ticker"],
+        )
         save_path_str = typer.prompt(
             "Save path (press Enter for default)",
             default=str(default_path)

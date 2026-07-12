@@ -10,6 +10,13 @@ from datetime import datetime
 from pathlib import Path
 
 
+def default_report_path(report_dir: str | Path, analysis_date: str, ticker: str) -> Path:
+    """Build the default report directory grouped by ticker and analysis date."""
+    safe_ticker = ticker.strip().upper()
+    safe_date = analysis_date.strip()
+    return Path(report_dir) / safe_ticker / f"{safe_date}_{safe_ticker}"
+
+
 def write_report_tree(final_state: dict, ticker: str, save_path) -> Path:
     """Save a completed run's reports to ``save_path``; return the complete-report path."""
     save_path = Path(save_path)

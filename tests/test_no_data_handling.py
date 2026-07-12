@@ -48,6 +48,51 @@ class TestLoadOhlcvNoPoison(unittest.TestCase):
 
 @pytest.mark.unit
 class TestRouteToVendorSentinel(unittest.TestCase):
+    def test_alpha_vantage_error_string_falls_back_to_configured_yfinance(self):
+        def alpha_returns_error(*args, **kwargs):
+            return "Error retrieving rsi data: Alpha Vantage rate limit exceeded"
+
+        def yfinance_returns_success(*args, **kwargs):
+            return "## RSI values\n\n2026-01-10: 48.2"
+
+        patched = {
+            "alpha_vantage": alpha_returns_error,
+            "yfinance": yfinance_returns_success,
+        }
+        with mock.patch.object(
+            interface, "get_vendor", return_value="alpha_vantage,yfinance"
+        ), mock.patch.dict(
+            interface.VENDOR_METHODS, {"get_indicators": patched}, clear=False
+        ):
+            result = interface.route_to_vendor(
+                "get_indicators", "RKLB", "rsi", "2026-01-10", 30
+            )
+
+        self.assertIn("RSI values", result)
+        self.assertNotIn("Error retrieving", result)
+
+    def test_alpha_vantage_information_payload_falls_back_to_configured_yfinance(self):
+        def alpha_returns_information(*args, **kwargs):
+            return '{"Information": "This is a premium endpoint."}'
+
+        def yfinance_returns_success(*args, **kwargs):
+            return "# Stock data for RKLB"
+
+        patched = {
+            "alpha_vantage": alpha_returns_information,
+            "yfinance": yfinance_returns_success,
+        }
+        with mock.patch.object(
+            interface, "get_vendor", return_value="alpha_vantage,yfinance"
+        ), mock.patch.dict(
+            interface.VENDOR_METHODS, {"get_stock_data": patched}, clear=False
+        ):
+            result = interface.route_to_vendor(
+                "get_stock_data", "RKLB", "2026-01-01", "2026-01-10"
+            )
+
+        self.assertEqual(result, "# Stock data for RKLB")
+
     def test_no_data_from_all_vendors_returns_sentinel(self):
         def raises_no_data(symbol, *a, **k):
             raise NoMarketDataError(symbol, "GC=F", "no rows")

@@ -165,6 +165,26 @@ def get_vendor(category: str, method: str = None) -> str:
     # Fall back to category-level configuration
     return config.get("data_vendors", {}).get(category, "default")
 
+
+def _is_alpha_vantage_failure_result(result) -> bool:
+    """Whether Alpha Vantage returned an error-shaped string as successful data."""
+    if not isinstance(result, str):
+        return False
+
+    lowered = result.strip().lower()
+    markers = (
+        "error retrieving ",
+        "error getting alpha vantage",
+        "rate limit exceeded",
+        "premium endpoint",
+        "alpha vantage api key",
+        "thank you for using alpha vantage",
+        "no data returned",
+    )
+    return any(marker in lowered for marker in markers) or (
+        lowered.startswith("{") and '"information"' in lowered
+    )
+
 def route_to_vendor(method: str, *args, **kwargs):
     """Route method calls to appropriate vendor implementation with fallback support."""
     category = get_category_for_method(method)
@@ -199,7 +219,17 @@ def route_to_vendor(method: str, *args, **kwargs):
         impl_func = vendor_impl[0] if isinstance(vendor_impl, list) else vendor_impl
 
         try:
-            return impl_func(*args, **kwargs)
+            result = impl_func(*args, **kwargs)
+            if vendor == "alpha_vantage" and _is_alpha_vantage_failure_result(result):
+                if first_error is None:
+                    first_error = RuntimeError(result)
+                logger.warning(
+                    "Vendor %r returned an error payload for %s; trying next vendor.",
+                    vendor,
+                    method,
+                )
+                continue
+            return result
         except VendorRateLimitError:
             logger.warning("Vendor %r rate-limited for %s; trying next vendor.", vendor, method)
             continue

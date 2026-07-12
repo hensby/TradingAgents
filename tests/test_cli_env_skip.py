@@ -7,6 +7,7 @@ provider/model/language must skip its interactive prompt and use the value.
 
 import os
 import unittest
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -18,6 +19,7 @@ class TestProviderDefaultUrl(unittest.TestCase):
         from cli.utils import provider_default_url
         self.assertEqual(provider_default_url("openai"), "https://api.openai.com/v1")
         self.assertEqual(provider_default_url("DeepSeek"), "https://api.deepseek.com")
+        self.assertEqual(provider_default_url("opencode"), "https://opencode.ai/zen/go/v1")
         self.assertIsNone(provider_default_url("google"))  # uses SDK default
 
     def test_unknown_provider_returns_none(self):
@@ -80,6 +82,15 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
         self.assertEqual(sel["shallow_thinker"], "deepseek-v4-pro")
         self.assertEqual(sel["deep_thinker"], "kimi-k2.5")
         self.assertEqual(sel["output_language"], "Japanese")
+
+
+@pytest.mark.unit
+class TestDefaultReportPath(unittest.TestCase):
+    def test_default_report_path_groups_by_ticker_then_analysis_date(self):
+        from tradingagents.reporting import default_report_path
+
+        path = default_report_path("/tmp/reports", "2026-05-29", "aapl")
+        self.assertEqual(path, Path("/tmp/reports/AAPL/2026-05-29_AAPL"))
 
 
 @pytest.mark.unit

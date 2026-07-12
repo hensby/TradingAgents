@@ -16,6 +16,7 @@ from tradingagents.llm_clients.openai_client import (
 @pytest.mark.unit
 def test_registry_membership():
     assert is_openai_compatible("openai")
+    assert is_openai_compatible("opencode")
     assert is_openai_compatible("openai_compatible")  # the generic endpoint
     # native (different API) clients are intentionally NOT in the registry
     assert not is_openai_compatible("anthropic")
@@ -35,6 +36,7 @@ def test_registry_membership():
     ("minimax", "https://api.minimax.io/v1", MinimaxChatOpenAI, False),
     ("minimax-cn", "https://api.minimaxi.com/v1", MinimaxChatOpenAI, False),
     ("openrouter", "https://openrouter.ai/api/v1", NormalizedChatOpenAI, False),
+    ("opencode", "https://opencode.ai/zen/go/v1", NormalizedChatOpenAI, False),
     ("mistral", "https://api.mistral.ai/v1", NormalizedChatOpenAI, False),
     ("kimi", "https://api.moonshot.ai/v1", NormalizedChatOpenAI, False),
     ("groq", "https://api.groq.com/openai/v1", NormalizedChatOpenAI, False),
